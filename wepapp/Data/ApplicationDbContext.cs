@@ -1,13 +1,50 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using wepapp.Models;
 
 namespace wepapp.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : DbContext
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        private readonly IConfiguration _config;
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration config)
             : base(options)
         {
+            _config = config;
+        }
+
+        public DbSet<AlbumSP> Albums { get; set; }
+        public DbSet<ChiTietDonHang> ChiTietDonHangs { get; set; }
+        public DbSet<ChiTietGioHang> ChiTietGioHangs { get; set; }
+        public DbSet<CTKM> CTKM { get; set; }
+        public DbSet<DanhGia> DanhGia { get; set; }
+        public DbSet<DonHang> DonHang { get; set; }
+        public DbSet<GioHang> GioHang { get; set; }
+        public DbSet<KhachHang> KhachHang { get; set;}
+        public DbSet<LoaiSP> LoaiSP { get; set; }
+        public DbSet<SanPham> SanPham { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.Entity<KhachHang>().HasIndex(x => x.TaiKhoan).IsUnique();
+            builder.Entity<KhachHang>().HasData(new KhachHang
+            {
+                MaKH = "KH001",
+                TenKH = "Nguyen Van A",
+                TaiKhoan = "KH001",
+                MatKhau = "accountTest123456",
+                NgaySinh = new DateTime(2000, 12, 13),
+                GioiTinh = "Nam",
+                SoDienThoai = "37462478234",
+                DiaChiNhanHang = "so 1, duong 2, phuong 3, quan 4"
+            });
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            string ConnectionStrings = _config.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            optionsBuilder.UseSqlServer(ConnectionStrings);
         }
     }
 }
